@@ -2,6 +2,7 @@ import numpy as np
 
 j=[0,1]
 theta=[0,1]
+alphaVectors=[0]
 
 #Transition Probabilities
 p0=np.eye(2)
@@ -42,4 +43,95 @@ def getReward(i,a):
 
 
 #to test the function    
-print(getReward(1,2))
+# print(getReward(1,2))
+
+
+
+
+
+def itrateFun(py,a,theta,t):  
+    
+    summation=0
+    argmaxArray=[]
+            
+    if(a==0):
+        p=p0;r=r0
+    if(a==1):
+        p=p1;r=r1
+    if(a==2):
+        p=p2;r=r2
+    print("we are here")
+    print(alphaVectors[t])
+    for k in range(len(alphaVectors[t])):        
+        print("we are in k",k)
+        for j in range(2):
+            for i in range(2):
+                summation+=py[i]*p[i,j]*r[j,theta]*alphaVectors[t][k][j]
+        argmaxArray.append(summation)
+
+    maxK=max(argmaxArray)    
+
+    return argmaxArray.index(maxK)
+     
+
+
+    
+def generalSum(j,theta,t,a,i):
+           
+    if(a==0):
+            p=p0;r=r0
+    if(a==1):
+            p=p1;r=r1
+    if(a==2):
+            p=p2;r=r2
+
+    result=0
+#     print(len(alphaVectors))
+    if(t!=1):
+        for ele in j:
+            for ele2 in theta:
+                result+=(p[i,ele])*(r[ele,ele2])*alphaVectors[t-1][itrateFun([1,0],a,ele2,t-1)][ele]
+    return result        
+
+
+
+actionsList=[]
+
+for a in range(3):
+    statesList=[]
+    for i in range(2):
+        train=getReward(i,a)+generalSum(j,theta,1,a,i)        
+        statesList.append(train)
+    actionsList.append(statesList)
+    
+alphaVectors.append(actionsList)
+
+
+
+
+actionsList=[]
+for a in range(3):
+    statesList=[]
+    for i in range(2):
+        train=getReward(i,a)+generalSum(j,theta,2,a,i) 
+        statesList.append(train)
+    actionsList.append(statesList)
+    print(statesList)
+alphaVectors.append(actionsList)
+
+
+
+
+
+ 
+print(len(actionsList))
+
+
+print("T2") 
+
+# print(actionsList)
+for eles in alphaVectors:
+    print(eles)
+
+
+

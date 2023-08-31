@@ -23,6 +23,11 @@ w2=[10,-100]
 
 
 
+# Pi(belief space)
+piList=np.linspace(0,1,101)
+
+
+
 def getReward(i,a):
     result=0
     
@@ -42,14 +47,10 @@ def getReward(i,a):
 
 
 
-#to test the function    
-# print(getReward(1,2))
 
 
 
-
-
-def itrateFun(py,a,theta,t):  
+def itrateFun(pi,a,theta,t):  
     
     summation=0
     argmaxArray=[]
@@ -60,24 +61,36 @@ def itrateFun(py,a,theta,t):
         p=p1;r=r1
     if(a==2):
         p=p2;r=r2
-    print("we are here")
-    print(alphaVectors[t])
-    for k in range(len(alphaVectors[t])):        
-        print("we are in k",k)
+        
+    
+    for k in range(len(alphaVectors[t])):     
+        if (t==1):
+            if(pi[0]>=0.6):
+                k=2
+#             elif(pi[0]<=0.9 and pi[0]>=0.1):
+#                 k=0
+#             else:
+#                 k=1
         for j in range(2):
             for i in range(2):
-                summation+=py[i]*p[i,j]*r[j,theta]*alphaVectors[t][k][j]
-        argmaxArray.append(summation)
 
+                summation+=pi[i]*p[i,j]*r[j,theta]*alphaVectors[t][k][j]
+        argmaxArray.append(summation)
+    
     maxK=max(argmaxArray)    
 
+    
+
+    
+    
     return argmaxArray.index(maxK)
      
 
 
     
-def generalSum(j,theta,t,a,i):
-           
+def generalSum(j,theta,t,a,i,pi):
+    
+        
     if(a==0):
             p=p0;r=r0
     if(a==1):
@@ -86,52 +99,54 @@ def generalSum(j,theta,t,a,i):
             p=p2;r=r2
 
     result=0
-#     print(len(alphaVectors))
     if(t!=1):
         for ele in j:
             for ele2 in theta:
-                result+=(p[i,ele])*(r[ele,ele2])*alphaVectors[t-1][itrateFun([1,0],a,ele2,t-1)][ele]
+                result+=(p[i,ele])*(r[ele,ele2])*alphaVectors[t-1][itrateFun(pi,a,ele2,t-1)][ele]
     return result        
 
 
 
-actionsList=[]
 
+actionsList=[]
 for a in range(3):
     statesList=[]
     for i in range(2):
-        train=getReward(i,a)+generalSum(j,theta,1,a,i)        
+        train=getReward(i,a)+generalSum(j,theta,1,a,i,[1,0])        
         statesList.append(train)
     actionsList.append(statesList)
     
 alphaVectors.append(actionsList)
 
 
+# Belief_States_t1=[piList[10:91],piList[0:11],piList[90:101]]
+
+
 
 
 actionsList=[]
+beliefStates=[]
 for a in range(3):
-    statesList=[]
-    for i in range(2):
-        train=getReward(i,a)+generalSum(j,theta,2,a,i) 
-        statesList.append(train)
-    actionsList.append(statesList)
-    print(statesList)
+    for beliefPoint in piList:
+        statesList=[]
+        for i in range(2):
+            train=getReward(i,a)+generalSum(j,theta,2,a,i,[beliefPoint,1-beliefPoint]) 
+            statesList.append(train)
+        if(not statesList in actionsList):
+            actionsList.append(statesList)
+            beliefStates.append(beliefPoint)
+#             print(a)
 alphaVectors.append(actionsList)
 
 
 
 
 
- 
-print(len(actionsList))
 
 
-print("T2") 
-
-# print(actionsList)
 for eles in alphaVectors:
-    print(eles)
+    print(f"T{alphaVectors.index(eles)}:",eles)
+# print(beliefStates)
 
 
 
